@@ -2,7 +2,7 @@ EXECUTABLE=kry.exe
 SOURCE=kry.cpp 
 
 compile:
-	g++ ${SOURCE} -o ${EXECUTABLE}
+	g++ -std=c++11  ${SOURCE} -o ${EXECUTABLE} -lgmp -lgmpxx
 
 gen: compile
 	./${EXECUTABLE} -g B
