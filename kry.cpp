@@ -286,7 +286,7 @@ void generate(){
 
 	mpz_mod(d,x,phi);							//calculate D
 
-	//cout << d << " * " << e << " = 1 mod " << phi << endl;
+	//cout << d << " * " << e << " mod " << phi << " = 1" << endl;
 
 	gmp_randclear(rstate);					// empty the memory location for the random generator state
 
@@ -315,8 +315,44 @@ void decrypt(mpz_t d, mpz_t n, mpz_t crypt){
 	return;
 }
 
-void crack(mpz_t d, mpz_t n, mpz_t crypt){
+void factorize(mpz_t p, mpz_t q, mpz_t num){
+	mpz_t tmp, n, i;
+	mpz_inits(tmp, n, i, NULL);
 
+	mpz_set(n, num);
+
+	mpz_set_ui(i, 3);
+	while(true){
+		mpz_mod(tmp, n, i);				// n mod i
+		if(mpz_cmp_ui(tmp,0) == 0){		//if the mod result is zero
+			mpz_set(p,i);					//then p = i
+			mpz_fdiv_q(q, num, p);				//q = n/p
+			mpz_clears(tmp, n, i, NULL);
+			return;
+		}else{
+			mpz_add_ui(i, i, 2);		//else i=i+2
+		}
+	}
+	
+}
+
+
+void crack(mpz_t e, mpz_t n, mpz_t crypt){
+	mpz_t p,q,pTmp,qTmp,phi,gdc,x,y,d,plain;
+	mpz_inits(p,q,pTmp,qTmp,phi,gdc,x,y,d,plain,NULL);
+	factorize(p,q,n);
+	mpz_sub_ui(pTmp,p,1);						//p = p-1
+	mpz_sub_ui(qTmp,q,1);						//q = q-1
+	mpz_mul(phi,pTmp,qTmp);						//phi(n) = (p - 1) * (q - 1)
+
+	extededEuclidean(gdc, x, y, e, phi);
+	mpz_mod(d,x,phi);							//calculate D
+	
+	mpz_powm(plain, crypt, d, n);
+
+	gmp_printf("%#Zx %#Zx %#Zx", p, q, plain);
+
+	mpz_clears(p,q,pTmp,qTmp,phi,gdc,x,y,d,plain,NULL);
 }
 
 int main(int argc, char* argv[]) {
