@@ -117,7 +117,7 @@ bool solStras(mpz_t* nn, uint32_t k, gmp_randstate_t rstate){
 	mpz_set(n, *nn);
 	if(mpz_cmp_ui(n,0) == 0) return false;		// 0 and 1 are not prime
 	if(mpz_cmp_ui(n,1) == 0) return false;
-	if(mpz_cmp_ui(n,2) == 0) return true;		// 2 is prime
+	if(mpz_cmp_ui(n,2) == 0) return false;		// 2 is prime, but for our purpose its too small
 	mpz_mod_ui(tmp,n,2);
 	if(mpz_cmp_ui(tmp,0) == 0) return false;		//even numbers are not prime 
 
@@ -271,12 +271,17 @@ void generate(){
 	getRandPrime(&p, &rstate);				//Randomly generate 2 large prime numbers p and q
 	getRandPrime(&q, &rstate);
 
+	//cout << "P " << p << " q: " << q << endl;
 	mpz_mul(n, p, q);						//n = p * q
+	//cout << "n " << n <<endl;
 	mpz_sub_ui(pTmp,p,1);						//p = p-1
 	mpz_sub_ui(qTmp,q,1);						//q = q-1
 	mpz_mul(phi,pTmp,qTmp);						//phi(n) = (p - 1) * (q - 1)
+	//cout << "phi " << phi <<endl;
 	getE(e, phi, &rstate);
 	
+	//cout << "e " << e <<endl;
+ 
 	extededEuclidean(gdc, x, y, e, phi);
 
 	mpz_mod(d,x,phi);							//calculate D
@@ -285,8 +290,8 @@ void generate(){
 
 	gmp_randclear(rstate);					// empty the memory location for the random generator state
 
-	gmp_printf("%#x %#x %#x %#x %#x \n", p, q, n, e, d);
-	//cout << p << " " << q << " " << n << " " << e << " " << d << endl; 
+	gmp_printf("%#Zx %#Zx %#Zx %#Zx %#Zx \n", p, q, n, e, d);
+	
 	mpz_clears(p,q,n,phi,e,d,x,y,pTmp,qTmp,gdc,NULL);					//clear variables
 
 	return;
@@ -296,7 +301,7 @@ void encrypt(mpz_t e, mpz_t n, mpz_t plain){
 	mpz_t crypt;
 	mpz_inits(crypt, NULL);
 	mpz_powm(crypt, plain, e, n);		//plain^e mod n
-	gmp_printf("%#x\n", crypt);
+	gmp_printf("%#Zx\n", crypt);
 	mpz_clear(crypt);
 	return;
 }
@@ -305,7 +310,7 @@ void decrypt(mpz_t d, mpz_t n, mpz_t crypt){
 	mpz_t plain;
 	mpz_inits(plain, NULL);
 	mpz_powm(plain, crypt, d, n);		//crypt^d mod n
-	gmp_printf("%#x\n", plain);
+	gmp_printf("%#Zx\n", plain);
 	mpz_clear(plain);
 	return;
 }
